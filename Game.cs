@@ -45,13 +45,13 @@ namespace TareaU
             Matrix4 modelview = Matrix4.LookAt(
                 new Vector3(1.5f, 2f, 3.5f),  // Cámara
                 new Vector3(0.0f, 0.1f, 0.0f), // Mira al origen
-                Vector3.UnitY);               // "Arriba"
+                Vector3.UnitY);
             GL.LoadMatrix(ref modelview);
 
-            // Dibuja múltiples letras U
-            DibujarLetraU(new Vector3(0f, 0f, 0f));           // Centro
-            DibujarLetraU(new Vector3(2f, 0f, 0f));           // Derecha
-            DibujarLetraU(new Vector3(-2f, 0f, 0f), 30f);     // Izquierda, rotada
+            // Dibuja múltiples letras U (ahora sin Translate)
+            DibujarLetraU(new Vector3(-2f, 0.0f, 0.0f));  // Centro
+            //DibujarLetraU(new Vector3(1.5f, 0.0f, 0.0f)); // A la derecha
+            //DibujarLetraU(new Vector3(-1.5f, 0.0f, 0.0f)); // A la izquierda
 
             DibujarEjes(); // Solo una vez
 
@@ -61,33 +61,32 @@ namespace TareaU
         private void DibujarLetraU(Vector3 posicion, float rotacionY = 0f)
         {
             GL.PushMatrix();
-            GL.Translate(posicion);
             GL.Rotate(rotacionY, 0f, 1f, 0f);
-            GL.Scale(0.2f, 0.2f, 0.2f); // ← Escala global (ajusta el valor para hacerla más pequeña o más grande)////////////////////////////////////////////////////////////////////////////////
+            GL.Scale(0.3f, 0.3f, 0.3f); // Puedes ajustar este valor para cambiar el tamaño de todas las letras
             GL.Color4(0.5f, 0.5f, 0.5f, 1.0f);
 
             // Parte lateral izquierda de la U
-            DibujaCaja(-0.8f, -0.8f, 0.3f, -0.4f, 1.2f, -0.3f);
+            DibujaCaja(posicion, -0.8f, -0.8f, 0.3f, -0.4f, 1.2f, -0.3f);
             // Parte lateral derecha de la U
-            DibujaCaja(0.4f, -0.8f, 0.3f, 0.8f, 1.2f, -0.3f);
+            DibujaCaja(posicion, 0.4f, -0.8f, 0.3f, 0.8f, 1.2f, -0.3f);
             // Parte inferior de la U
-            DibujaCaja(-0.8f, -1.2f, 0.3f, 0.8f, -0.8f, -0.3f);
+            DibujaCaja(posicion, -0.8f, -1.2f, 0.3f, 0.8f, -0.8f, -0.3f);
 
             GL.PopMatrix();
         }
 
-        private void DibujaCaja(float x1, float y1, float z1, float x2, float y2, float z2)
+        private void DibujaCaja(Vector3 offset, float x1, float y1, float z1, float x2, float y2, float z2)
         {
-            // 8 vértices
+            // 8 vértices con offset aplicado
             Vector3[] v = new Vector3[8];
-            v[0] = new Vector3(x1, y2, z1); // Frente arriba izq
-            v[1] = new Vector3(x2, y2, z1); // Frente arriba der
-            v[2] = new Vector3(x2, y1, z1); // Frente abajo der
-            v[3] = new Vector3(x1, y1, z1); // Frente abajo izq
-            v[4] = new Vector3(x1, y2, z2); // Atrás arriba izq
-            v[5] = new Vector3(x2, y2, z2); // Atrás arriba der
-            v[6] = new Vector3(x2, y1, z2); // Atrás abajo der
-            v[7] = new Vector3(x1, y1, z2); // Atrás abajo izq
+            v[0] = new Vector3(x1, y2, z1) + offset;
+            v[1] = new Vector3(x2, y2, z1) + offset;
+            v[2] = new Vector3(x2, y1, z1) + offset;
+            v[3] = new Vector3(x1, y1, z1) + offset;
+            v[4] = new Vector3(x1, y2, z2) + offset;
+            v[5] = new Vector3(x2, y2, z2) + offset;
+            v[6] = new Vector3(x2, y1, z2) + offset;
+            v[7] = new Vector3(x1, y1, z2) + offset;
 
             // Caras (6)
             DibujarCara(v[0], v[1], v[2], v[3]); // Frente
