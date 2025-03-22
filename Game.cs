@@ -4,13 +4,14 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using System;
 
-namespace LetraU
+namespace TareaU
 {
     class Game : GameWindow
     {
-        public Game(int width, int height) : base(width, height, GraphicsMode.Default, "Diseño Letra U - 3D")
+        public Game(int width, int height) : base(width, height, GraphicsMode.Default, "Tarea Letra U ")
         {
         }
+
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -20,7 +21,6 @@ namespace LetraU
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-
             GL.Viewport(0, 0, Width, Height);
             float aspectRatio = (float)Width / Height;
             Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(
@@ -36,193 +36,95 @@ namespace LetraU
             base.OnUpdateFrame(e);
         }
 
-
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.Enable(EnableCap.DepthTest);
-            // Configura la cámara
+
             Matrix4 modelview = Matrix4.LookAt(
-                new Vector3(1.5f, 2f, 3.5f), // Posición de la cámara
-                new Vector3(0.0f, 0.1f, 0.0f), // Punto de mira
-                Vector3.UnitY); // Vector arriba
+                new Vector3(1.5f, 2f, 3.5f),  // Cámara
+                new Vector3(0.0f, 0.1f, 0.0f), // Mira al origen
+                Vector3.UnitY);               // "Arriba"
             GL.LoadMatrix(ref modelview);
 
+            // Dibuja múltiples letras U
+            DibujarLetraU(new Vector3(0f, 0f, 0f));           // Centro
+            DibujarLetraU(new Vector3(2f, 0f, 0f));           // Derecha
+            DibujarLetraU(new Vector3(-2f, 0f, 0f), 30f);     // Izquierda, rotada
+
+            DibujarEjes(); // Solo una vez
+
+            SwapBuffers();
+        }
+
+        private void DibujarLetraU(Vector3 posicion, float rotacionY = 0f)
+        {
             GL.PushMatrix();
-            GL.Color4(0.5f, 0.5f, 0.5f, 0.0f);
+            GL.Translate(posicion);
+            GL.Rotate(rotacionY, 0f, 1f, 0f);
+            GL.Scale(0.2f, 0.2f, 0.2f); // ← Escala global (ajusta el valor para hacerla más pequeña o más grande)////////////////////////////////////////////////////////////////////////////////
+            GL.Color4(0.5f, 0.5f, 0.5f, 1.0f);
 
-             // Parte de la U lateral Izq 
-                GL.Begin(PrimitiveType.LineLoop);
-                // Cara frontal
-                GL.Vertex3(-0.8f, 1.2f, 0.3f);
-                GL.Vertex3(-0.4f, 1.2f, 0.3f);
-                GL.Vertex3(-0.4f, -0.8f, 0.3f);
-                GL.Vertex3(-0.8f, -0.8f, 0.3f);
-                GL.End();
-            
+            // Parte lateral izquierda de la U
+            DibujaCaja(-0.8f, -0.8f, 0.3f, -0.4f, 1.2f, -0.3f);
+            // Parte lateral derecha de la U
+            DibujaCaja(0.4f, -0.8f, 0.3f, 0.8f, 1.2f, -0.3f);
+            // Parte inferior de la U
+            DibujaCaja(-0.8f, -1.2f, 0.3f, 0.8f, -0.8f, -0.3f);
 
+            GL.PopMatrix();
+        }
+
+        private void DibujaCaja(float x1, float y1, float z1, float x2, float y2, float z2)
+        {
+            // 8 vértices
+            Vector3[] v = new Vector3[8];
+            v[0] = new Vector3(x1, y2, z1); // Frente arriba izq
+            v[1] = new Vector3(x2, y2, z1); // Frente arriba der
+            v[2] = new Vector3(x2, y1, z1); // Frente abajo der
+            v[3] = new Vector3(x1, y1, z1); // Frente abajo izq
+            v[4] = new Vector3(x1, y2, z2); // Atrás arriba izq
+            v[5] = new Vector3(x2, y2, z2); // Atrás arriba der
+            v[6] = new Vector3(x2, y1, z2); // Atrás abajo der
+            v[7] = new Vector3(x1, y1, z2); // Atrás abajo izq
+
+            // Caras (6)
+            DibujarCara(v[0], v[1], v[2], v[3]); // Frente
+            DibujarCara(v[4], v[5], v[6], v[7]); // Atrás
+            DibujarCara(v[0], v[4], v[7], v[3]); // Izquierda
+            DibujarCara(v[1], v[5], v[6], v[2]); // Derecha
+            DibujarCara(v[0], v[1], v[5], v[4]); // Superior
+            DibujarCara(v[3], v[2], v[6], v[7]); // Inferior
+        }
+
+        private void DibujarCara(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+        {
             GL.Begin(PrimitiveType.LineLoop);
-            // Cara superior            
-            GL.Vertex3(-0.8f, 1.2f, 0.3f);
-            GL.Vertex3(-0.8f, 1.2f, -0.3f);
-            GL.Vertex3(-0.4f, 1.2f, -0.3f);
-            GL.Vertex3(-0.4f, 1.2f, 0.3f);
+            GL.Vertex3(a);
+            GL.Vertex3(b);
+            GL.Vertex3(c);
+            GL.Vertex3(d);
             GL.End();
+        }
 
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara inferior
-            GL.Vertex3(-0.8f, -0.8f, -0.3f);
-            GL.Vertex3(-0.4f, -0.8f, -0.3f);
-            GL.Vertex3(-0.4f, -0.8f, 0.3f);
-            GL.Vertex3(-0.8f, -0.8f, 0.3f);
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara Atras
-            GL.Vertex3(-0.8f, 1.2f, -0.3f);
-            GL.Vertex3(-0.4f, 1.2f, -0.3f);
-            GL.Vertex3(-0.4f, -0.8f, -0.3f);
-            GL.Vertex3(-0.8f, -0.8f, -0.3f);
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara Lateral Izq
-            GL.Vertex3(-0.8f, 1.2f, 0.3f);
-            GL.Vertex3(-0.8f, 1.2f, -0.3f);
-            GL.Vertex3(-0.8f, -0.8f, -0.3f);
-            GL.Vertex3(-0.8f, -0.8f, 0.3f);
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara Lateral Der
-            GL.Vertex3(-0.4f, 1.2f, 0.3f);
-            GL.Vertex3(-0.4f, 1.2f, -0.3f);
-            GL.Vertex3(-0.4f, -0.8f, -0.3f);
-            GL.Vertex3(-0.4f, -0.8f, 0.3f);
-            GL.End();
-
-            // Parte de la U lateral Der 
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara frontal
-            GL.Vertex3(0.4f, 1.2f, 0.3f);
-            GL.Vertex3(0.8f, 1.2f, 0.3f);
-            GL.Vertex3(0.8f, -0.8f, 0.3f);
-            GL.Vertex3(0.4f, -0.8f, 0.3f);
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara superior
-            GL.Vertex3(0.4f, 1.2f, 0.3f);
-            GL.Vertex3(0.4f, 1.2f, -0.3f);
-            GL.Vertex3(0.8f, 1.2f, -0.3f);
-            GL.Vertex3(0.8f, 1.2f, 0.3f);
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara inferior
-            GL.Vertex3(0.4f, -0.8f, 0.3f);
-            GL.Vertex3(0.4f, -0.8f, -0.3f);
-            GL.Vertex3(0.8f, -0.8f, -0.3f);
-            GL.Vertex3(0.8f, -0.8f, 0.3f);
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara Atras
-            GL.Vertex3(0.4f, 1.2f, -0.3f);
-            GL.Vertex3(0.8f, 1.2f, -0.3f);
-            GL.Vertex3(0.8f, -0.8f, -0.3f);
-            GL.Vertex3(0.4f, -0.8f, -0.3f);
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara Lateral Izq
-            GL.Vertex3(0.4f, 1.2f, 0.3f);
-            GL.Vertex3(0.4f, 1.2f, -0.3f);
-            GL.Vertex3(0.4f, -0.8f, -0.3f);
-            GL.Vertex3(0.4f, -0.8f, 0.3f);
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara Lateral Der
-            GL.Vertex3(0.8f, 1.2f, 0.3f);
-            GL.Vertex3(0.8f, 1.2f, -0.3f);
-            GL.Vertex3(0.8f, -0.8f, -0.3f);
-            GL.Vertex3(0.8f, -0.8f, 0.3f);
-            GL.End();
-
-            // Parte de la U inferior 
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara frontal
-            GL.Vertex3(-0.8f, -0.8f, 0.3f);
-            GL.Vertex3(0.8f, -0.8f, 0.3f);
-            GL.Vertex3(0.8f, -1.2f, 0.3f);
-            GL.Vertex3(-0.8f, -1.2f, 0.3f);
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara Atras
-            GL.Vertex3(-0.8f, -0.8f, -0.3f);
-            GL.Vertex3(0.8f, -0.8f, -0.3f);
-            GL.Vertex3(0.8f, -1.2f, -0.3f);
-            GL.Vertex3(-0.8f, -1.2f, -0.3f);
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara superior
-            GL.Vertex3(-0.8f, -0.8f, 0.3f);
-            GL.Vertex3(-0.8f, -0.8f, -0.3f);
-            GL.Vertex3(0.8f, -0.8f, -0.3f);
-            GL.Vertex3(0.8f, -0.8f, 0.3f);
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara inferior
-            GL.Vertex3(-0.8f, -1.2f, 0.3f);
-            GL.Vertex3(-0.8f, -1.2f, -0.3f);
-            GL.Vertex3(0.8f, -1.2f, -0.3f);
-            GL.Vertex3(0.8f, -1.2f, 0.3f);
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara lateral Izq
-            GL.Vertex3(-0.8f, -0.8f, 0.3f);
-            GL.Vertex3(-0.8f, -0.8f, -0.3f);
-            GL.Vertex3(-0.8f, -1.2f, -0.3f);
-            GL.Vertex3(-0.8f, -1.2f, 0.3f);
-            GL.End();
-
-            GL.Begin(PrimitiveType.LineLoop);
-            // Cara lateral Der
-            GL.Vertex3(0.8f, -0.8f, 0.3f);
-            GL.Vertex3(0.8f, -0.8f, -0.3f);
-            GL.Vertex3(0.8f, -1.2f, -0.3f);
-            GL.Vertex3(0.8f, -1.2f, 0.3f);
-            GL.End();
-
-            // Dibuja los ejes coordenados-------------------------------------------------------------------------------------
+        private void DibujarEjes()
+        {
             GL.Begin(PrimitiveType.Lines);
 
-            // Eje X (Rojo)
-            GL.Color3(1.0f, 0.0f, 0.0f);
+            GL.Color3(1.0f, 0.0f, 0.0f); // X
             GL.Vertex3(-2.0f, 0.0f, 0.0f);
             GL.Vertex3(2.0f, 0.0f, 0.0f);
 
-            // Eje Y (Verde)
-            GL.Color3(0.0f, 1.0f, 0.0f);
+            GL.Color3(0.0f, 1.0f, 0.0f); // Y
             GL.Vertex3(0.0f, -2.0f, 0.0f);
             GL.Vertex3(0.0f, 2.0f, 0.0f);
 
-            // Eje Z (Azul)
-            GL.Color3(0.0f, 0.0f, 1.0f);
+            GL.Color3(0.0f, 0.0f, 1.0f); // Z
             GL.Vertex3(0.0f, 0.0f, -2.0f);
             GL.Vertex3(0.0f, 0.0f, 2.0f);
 
             GL.End();
-
-
-            GL.PopMatrix();
-            SwapBuffers();
         }
     }
 }
